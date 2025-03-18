@@ -200,3 +200,5 @@ gradle-app.setting
 # Java heap dump
 *.hprof
 
+docker/secret.yml
+docker/configMap.yml
