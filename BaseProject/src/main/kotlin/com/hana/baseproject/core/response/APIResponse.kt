@@ -1,5 +1,6 @@
 package com.hana.baseproject.core.response
 
+import com.hana.baseproject.core.exception.ApplicationException
 import org.springframework.http.HttpStatus.*
 
 data class APIResponse<T> (
@@ -12,13 +13,13 @@ data class APIResponse<T> (
             return APIResponse(OK.name, result)
         }
 
-//        fun <T> error(result: T): APIResponse<String> {
-//            return if (result is ApplicationException) {
-//                APIResponse((result as ApplicationException).getErrorCode.status.name, result.getMessage)
-//            } else {
-//                APIResponse(INTERNAL_SERVER_ERROR.name, "알 수 없는 예외가 발생했습니다.")
-//            }
-//        }
+        fun <T> error(result: T): APIResponse<String> {
+            return if (result is ApplicationException) {
+                APIResponse((result as ApplicationException).getErrorCode.status.name, result.getMessage)
+            } else {
+                APIResponse(INTERNAL_SERVER_ERROR.name, "알 수 없는 예외가 발생했습니다.")
+            }
+        }
 
     }
 }
