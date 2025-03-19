@@ -7,4 +7,5 @@ enum class ErrorCode (
     val message: String,
 ){
     SAMPLE_ERROR_CODE(HttpStatus.INTERNAL_SERVER_ERROR, "예시용 에러코드 입니다."),
+    COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "회사정보를 찾을 수 없습니다."),
 }
