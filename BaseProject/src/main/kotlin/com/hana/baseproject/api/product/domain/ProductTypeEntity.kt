@@ -1,0 +1,30 @@
+package com.hana.baseproject.api.product.domain
+
+import com.hana.baseproject.api.product.domain.constant.ProductCategory
+import jakarta.persistence.*
+
+
+@Entity
+@Table(name = "product_type", indexes = arrayOf(Index(name = "idx_product_type", columnList = "username")))
+class ProductTypeEntity (
+
+
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    val productCategory: ProductCategory,
+
+    @Column(length = 100 ,nullable = false)
+    val categoryName: String,
+
+    @OneToMany(mappedBy = "productTypeEntity")
+    val productEntity: List<ProductEntity>,
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long?,
+
+){
+
+
+}
