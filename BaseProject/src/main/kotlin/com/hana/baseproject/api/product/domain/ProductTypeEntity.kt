@@ -5,7 +5,7 @@ import jakarta.persistence.*
 
 
 @Entity
-@Table(name = "product_type", indexes = arrayOf(Index(name = "idx_product_type", columnList = "username")))
+@Table(name = "product_type")
 class ProductTypeEntity (
 
 

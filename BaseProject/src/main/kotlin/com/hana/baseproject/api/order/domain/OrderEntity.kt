@@ -6,7 +6,7 @@ import com.hana.baseproject.api.user.domain.UserEntity
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "orders", indexes = arrayOf(Index(name = "idx_user_account", columnList = "username")))
+@Table(name = "orders", indexes = arrayOf(Index(name = "idx_user_account", columnList = "order_code")))
 class OrderEntity (
 
     @Column(length = 100, updatable = false, nullable = false)
