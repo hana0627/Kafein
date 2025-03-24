@@ -15,9 +15,13 @@ class ProductController {
     }
     @PostMapping("/v2/productType")
     fun createProductType(): APIResponse<String> {
+        // 상품타입을 생성한다.
+        return APIResponse.success("");
+    }
+    @PatchMapping("/v2/productType")
+    fun updateProductType(): APIResponse<String> {
         // 상품타입을 수정한다.
         return APIResponse.success("");
-
     }
     @DeleteMapping("/v2/{productTypeId}/productType")
     fun deleteProductType(@PathVariable("productTypeId") id: Long): APIResponse<String> {
