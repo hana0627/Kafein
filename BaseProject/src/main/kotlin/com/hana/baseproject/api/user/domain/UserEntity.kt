@@ -4,10 +4,11 @@ import com.hana.baseproject.api.company.domain.CompanyEntity
 import com.hana.baseproject.api.order.domain.OrderEntity
 import com.hana.baseproject.api.user.domain.constant.Gender
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 @Entity
 @Table(name = "user_account", indexes = arrayOf(Index(name = "idx_user_account", columnList = "username")))
-class UserEntity (
+class UserEntity(
 
     @Column(length = 100, updatable = false, nullable = false)
     val username: String,
@@ -31,6 +32,11 @@ class UserEntity (
     @Column(nullable = false)
     val point: Int,
 
+    var deleted: Boolean = false,
+
+    @Column(nullable = true)
+    var deletedDate: LocalDateTime? = null,
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long?,
@@ -42,8 +48,43 @@ class UserEntity (
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
-    val companyEntity: CompanyEntity,
-){
+    val company: CompanyEntity?,
+) {
 
+
+    companion object {
+        fun fixture(
+            username: String = "hanana",
+            name: String = "박하나",
+            password: String = "123456",
+            description: String = "하나다방 사장님",
+            phoneNumber: String = "010-1234-5678",
+            gender: Gender = Gender.F,
+            point: Int = 0,
+            deleted: Boolean = false,
+            deletedDate: LocalDateTime? = null,
+            id: Long? = null,
+            orders: List<OrderEntity> = listOf(),
+            company: CompanyEntity? = null,
+        ): UserEntity {
+            return UserEntity(
+                username = username,
+                name = name,
+                password = password,
+                phoneNumber = phoneNumber,
+                description = description,
+                gender = gender,
+                point = point,
+                deleted = deleted,
+                deletedDate = deletedDate,
+                id = id,
+                orders = orders,
+                company = CompanyEntity.fixture(
+                    companyCode = "A0000001",
+                    companyName = "하나다방",
+                ),
+            )
+        }
+    }
 
 }
