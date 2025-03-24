@@ -1,6 +1,7 @@
 package com.hana.baseproject.api.company.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.hana.baseproject.api.company.controller.reponse.CompanyInformation
 import com.hana.baseproject.api.company.controller.request.CompanyCreate
 import com.hana.baseproject.api.company.controller.request.CompanyUpdate
 import com.hana.baseproject.api.company.domain.CompanyEntity
@@ -35,11 +36,12 @@ class CompanyControllerTest {
     @Test
     fun 회사코드로_회사조회가_가능하다() {
         //given
-        val company = CompanyEntity.fixture(companyCode = "A0000001")
+        val company = CompanyEntity.fixture(companyCode = "A0000001", companyName = "하나다방")
+        val companyInformation = CompanyInformation.fixture()
         val companyCode: String = company.companyCode
 
 
-        given(companyService.getCompany(companyCode)).willReturn(company)
+        given(companyService.getCompany(companyCode)).willReturn(companyInformation)
 
         //when & then
         mvc.perform(get("/v1/{companyCode}/company", companyCode))
@@ -82,8 +84,9 @@ class CompanyControllerTest {
 //        val companyCreate: CompanyCreate = CompanyCreate.fixture(companyName = "하나다방")
         val companyCreate: CompanyCreate = CompanyCreate.fixture()
         val companyEntity: CompanyEntity = CompanyEntity.fixture(companyCode = "A0000001", companyName = "하나다방")
+        val companyInformation: CompanyInformation = CompanyInformation.fixture()
 
-        given(companyService.createCompany(companyCreate)).willReturn(companyEntity.companyCode)
+        given(companyService.createCompany(companyCreate)).willReturn(companyInformation)
 
         val json: String = om.writeValueAsString(companyCreate)
 
@@ -95,7 +98,8 @@ class CompanyControllerTest {
             .andExpect(status().isOk)
             .andExpect(content().contentType(APPLICATION_JSON))
             .andExpect(jsonPath("$.resultCode").value(HttpStatus.OK.name))
-            .andExpect(jsonPath("$.result").value(companyEntity.companyCode))
+            .andExpect(jsonPath("$.result.companyCode").value(companyInformation.companyCode))
+            .andExpect(jsonPath("$.result.companyName").value(companyInformation.companyName))
             .andDo(print())
 
         then(companyService).should().createCompany(companyCreate)
@@ -106,8 +110,9 @@ class CompanyControllerTest {
         //given
 //        val companyUpdate: CompanyUpdate = CompanyUpdate.fixture(companyCode = "A0000001", companyName = "신세경다방")
         val companyUpdate: CompanyUpdate = CompanyUpdate.fixture()
+        val companyInformation: CompanyInformation = CompanyInformation.fixture(companyName = companyUpdate.companyName)
 
-        given(companyService.updateCompany(companyUpdate)).willReturn(companyUpdate.companyCode)
+        given(companyService.updateCompany(companyUpdate)).willReturn(companyInformation)
 
         val json: String = om.writeValueAsString(companyUpdate)
 
@@ -119,7 +124,8 @@ class CompanyControllerTest {
             .andExpect(status().isOk)
             .andExpect(content().contentType(APPLICATION_JSON))
             .andExpect(jsonPath("$.resultCode").value(HttpStatus.OK.name))
-            .andExpect(jsonPath("$.result").value(companyUpdate.companyCode))
+            .andExpect(jsonPath("$.result.companyCode").value(companyUpdate.companyCode))
+            .andExpect(jsonPath("$.result.companyName").value(companyUpdate.companyName))
             .andDo(print())
 
         then(companyService).should().updateCompany(companyUpdate)
@@ -129,7 +135,6 @@ class CompanyControllerTest {
     fun 존재하지_않는_회사는_수정이_불가능하다() {
         //given
         val companyUpdate: CompanyUpdate = CompanyUpdate.fixture(companyCode = "WrongCompanyCode", companyName = "신세경다방")
-        val companyEntity: CompanyEntity = CompanyEntity.fixture(companyCode = "A0000001", companyName = "하나다방")
 
         given(companyService.updateCompany(companyUpdate)).willThrow(
             ApplicationException(ErrorCode.COMPANY_NOT_FOUND, ErrorCode.COMPANY_NOT_FOUND.message)
@@ -155,9 +160,10 @@ class CompanyControllerTest {
     fun 회사_삭제가_가능하다() {
         //given
         val companyEntity: CompanyEntity = CompanyEntity.fixture(companyCode = "A0000001", companyName = "하나다방")
+        val companyInformation: CompanyInformation = CompanyInformation.fixture()
         val companyCode: String = companyEntity.companyCode
 
-        given(companyService.deleteCompany(companyCode)).willReturn(companyEntity.companyCode)
+        given(companyService.deleteCompany(companyCode)).willReturn(companyInformation)
 
         //when & then
         mvc.perform(
@@ -165,7 +171,8 @@ class CompanyControllerTest {
             .andExpect(status().isOk)
             .andExpect(content().contentType(APPLICATION_JSON))
             .andExpect(jsonPath("$.resultCode").value(HttpStatus.OK.name))
-            .andExpect(jsonPath("$.result").value(companyCode))
+            .andExpect(jsonPath("$.result.companyCode").value(companyEntity.companyCode))
+            .andExpect(jsonPath("$.result.companyName").value(companyEntity.companyName))
             .andDo(print())
 
         then(companyService).should().deleteCompany(companyCode)
