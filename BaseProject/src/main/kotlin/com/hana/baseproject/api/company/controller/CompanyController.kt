@@ -4,13 +4,14 @@ import com.hana.baseproject.api.company.controller.reponse.CompanyInformation
 import com.hana.baseproject.api.company.controller.request.CompanyCreate
 import com.hana.baseproject.api.company.controller.request.CompanyUpdate
 import com.hana.baseproject.api.company.domain.CompanyEntity
+import com.hana.baseproject.api.company.service.CompanyService
 import com.hana.baseproject.api.company.service.impl.CompanyServiceImpl
 import com.hana.baseproject.core.response.APIResponse
 import org.springframework.web.bind.annotation.*
 
 @RestController
 class CompanyController (
-    private val companyService: CompanyServiceImpl
+    private val companyService: CompanyService
 ){
 
     @GetMapping("/v1/{companyCode}/company")
