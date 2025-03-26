@@ -1,6 +1,6 @@
 package com.hana.baseproject.api.product.domain.constant
 
-enum class ProductCategory (
+enum class ProductLevel (
     val description: String
 ) {
     MEGA("대분류"),

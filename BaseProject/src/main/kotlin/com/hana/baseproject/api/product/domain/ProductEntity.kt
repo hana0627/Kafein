@@ -2,7 +2,6 @@ package com.hana.baseproject.api.product.domain
 
 import com.hana.baseproject.api.company.domain.CompanyEntity
 import com.hana.baseproject.api.order.domain.OrderEntity
-import com.hana.baseproject.api.product.domain.constant.ProductCategory
 import jakarta.persistence.*
 
 
@@ -24,7 +23,7 @@ class ProductEntity (
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_type_id")
-    val productTypeEntity: ProductTypeEntity,
+    val productCategory: ProductCategoryEntity,
 
     @OneToMany(mappedBy = "product")
     val orders: List<OrderEntity>,
