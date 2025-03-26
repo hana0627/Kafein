@@ -14,7 +14,7 @@ data class CompanyEntity (
 
     @Column(length = 255, nullable = true)
     var companyName: String,
-    @OneToMany(mappedBy = "companyEntity")
+    @OneToMany(mappedBy = "company")
     val userEntity: List<UserEntity>,
 
     @OneToMany(mappedBy = "companyEntity")
