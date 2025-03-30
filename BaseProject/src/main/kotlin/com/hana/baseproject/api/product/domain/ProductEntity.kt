@@ -3,6 +3,7 @@ package com.hana.baseproject.api.product.domain
 import com.hana.baseproject.api.company.domain.CompanyEntity
 import com.hana.baseproject.api.order.domain.OrderEntity
 import jakarta.persistence.*
+import java.time.LocalDateTime
 
 
 @Entity
@@ -31,6 +32,11 @@ class ProductEntity (
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company_id")
     val companyEntity: CompanyEntity,
+
+    var deleted: Boolean = false,
+
+    @Column(nullable = true)
+    var deletedDate: LocalDateTime? = null,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
