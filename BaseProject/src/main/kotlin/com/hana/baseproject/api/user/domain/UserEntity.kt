@@ -3,6 +3,7 @@ package com.hana.baseproject.api.user.domain
 import com.hana.baseproject.api.company.domain.CompanyEntity
 import com.hana.baseproject.api.order.domain.OrderEntity
 import com.hana.baseproject.api.user.domain.constant.Gender
+import com.hana.baseproject.api.user.domain.constant.UserType
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -24,6 +25,10 @@ class UserEntity(
 
     @Column(length = 1000, nullable = true)
     val description: String,
+
+    @Column(length = 10)
+    @Enumerated(EnumType.STRING)
+    val userType: UserType,
 
     @Column(length = 1)
     @Enumerated(EnumType.STRING)
@@ -59,6 +64,7 @@ class UserEntity(
             password: String = "123456",
             description: String = "하나다방 사장님",
             phoneNumber: String = "010-1234-5678",
+            userType: UserType = UserType.CUSTOMER,
             gender: Gender = Gender.F,
             point: Int = 0,
             deleted: Boolean = false,
@@ -73,6 +79,7 @@ class UserEntity(
                 password = password,
                 phoneNumber = phoneNumber,
                 description = description,
+                userType= userType,
                 gender = gender,
                 point = point,
                 deleted = deleted,
