@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class CompanyServiceImpl(
-    val companyRepository: CompanyRepository
+    private val companyRepository: CompanyRepository
 ) : CompanyService {
 
     private val log = LoggerFactory.getLogger(this.javaClass)!!
