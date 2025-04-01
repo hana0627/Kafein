@@ -195,6 +195,7 @@ class CompanyServiceImplTest (
         assertThat(result.companyCode).isEqualTo(companyEntity.companyCode)
         assertThat(result.companyName).isEqualTo(companyEntity.companyName)
         assertThat(result.deleted).isEqualTo(companyEntity.deleted)
+        //TODO deletedDate 비교
     }
 
     @Test

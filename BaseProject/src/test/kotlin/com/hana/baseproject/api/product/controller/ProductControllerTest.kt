@@ -203,7 +203,7 @@ class ProductControllerTest {
     @Test
     fun 상품타입_삭제에_성공한다() {
         //given
-        val deletedDate = LocalDateTime.now()
+        val deletedDate: LocalDateTime = LocalDateTime.of(2025,4,1,18,30,30)
         val productCategoryInformation: ProductCategoryInformation = ProductCategoryInformation.fixture(
             deleted = true,
             deletedDate = deletedDate,
@@ -244,6 +244,7 @@ class ProductControllerTest {
         given(productService.deleteProductCategory(productCategoryId)).willThrow(
             ApplicationException(ErrorCode.CATEGORY_NOT_FOUND, ErrorCode.CATEGORY_NOT_FOUND.message)
         )
+
         //when & then
         mvc.perform(
             delete("/v2/{productCategoryId}/productCategory", productCategoryId)
@@ -544,7 +545,7 @@ class ProductControllerTest {
     @Test
     fun 상품삭제에_성공한다() {
         //given
-        val deletedDate = LocalDateTime.now()
+        val deletedDate: LocalDateTime = LocalDateTime.of(2025,4,1,18,30,30)
         val productCode = "PD000001"
         val productInformation: ProductInformation = ProductInformation.fixture(
             productCode = productCode,
@@ -572,7 +573,7 @@ class ProductControllerTest {
     }
 
     @Test
-    fun 없는_상품_수정시_예외가_발생한다() { //given
+    fun 없는_상품_삭제시_예외가_발생한다() { //given
         val productCode = "wrongProductCode"
 
         given(productService.deleteProduct(productCode)).willThrow(

@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import java.time.LocalDateTime
 import kotlin.test.Test
 
 @WebMvcTest(controllers = [UserController::class])
@@ -499,9 +500,13 @@ class UserControllerTest {
     @Test
     fun 회원정보_삭제에_성공한다() {
         //given
+        val deletedDate: LocalDateTime = LocalDateTime.of(2025,4,1,18,30,30)
         val username: String = "hanana"
-        val userInformation: UserInformation = UserInformation.fixture(username = username)
-
+        val userInformation: UserInformation = UserInformation.fixture(
+            username = username,
+            deleted = true,
+            deletedDate = deletedDate
+        )
         given(userService.deleteUser(username)).willReturn(userInformation)
 
 
@@ -519,6 +524,8 @@ class UserControllerTest {
             .andExpect(jsonPath("$.result.point").value(userInformation.point))
             .andExpect(jsonPath("$.result.companyCode").value(userInformation.companyCode))
             .andExpect(jsonPath("$.result.companyName").value(userInformation.companyName))
+            .andExpect(jsonPath("$.result.deleted").value(userInformation.deleted))
+            .andExpect(jsonPath("$.result.deletedDate").value(userInformation.deletedDate!!.toString()))
             .andDo(print())
 
         then(userService).should().deleteUser(username)

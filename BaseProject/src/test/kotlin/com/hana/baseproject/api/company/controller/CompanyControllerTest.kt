@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import java.time.LocalDateTime
 import kotlin.test.Test
 
 @WebMvcTest(controllers = [CompanyController::class])
@@ -159,8 +160,14 @@ class CompanyControllerTest {
     @Test
     fun 회사_삭제가_가능하다() {
         //given
+        val deletedDate: LocalDateTime = LocalDateTime.of(2025,4,1,18,30,30)
         val companyEntity: CompanyEntity = CompanyEntity.fixture(companyCode = "A0000001", companyName = "하나다방")
-        val companyInformation: CompanyInformation = CompanyInformation.fixture()
+        val companyInformation: CompanyInformation = CompanyInformation.fixture(
+            companyCode = companyEntity.companyCode,
+            companyName = companyEntity.companyName,
+            deleted = true,
+            deletedDate = deletedDate
+        )
         val companyCode: String = companyEntity.companyCode
 
         given(companyService.deleteCompany(companyCode)).willReturn(companyInformation)
@@ -171,8 +178,10 @@ class CompanyControllerTest {
             .andExpect(status().isOk)
             .andExpect(content().contentType(APPLICATION_JSON))
             .andExpect(jsonPath("$.resultCode").value(HttpStatus.OK.name))
-            .andExpect(jsonPath("$.result.companyCode").value(companyEntity.companyCode))
-            .andExpect(jsonPath("$.result.companyName").value(companyEntity.companyName))
+            .andExpect(jsonPath("$.result.companyCode").value(companyInformation.companyCode))
+            .andExpect(jsonPath("$.result.companyName").value(companyInformation.companyName))
+            .andExpect(jsonPath("$.result.deleted").value(companyInformation.deleted))
+            .andExpect(jsonPath("$.result.deletedDate").value(companyInformation.deletedDate.toString()))
             .andDo(print())
 
         then(companyService).should().deleteCompany(companyCode)
