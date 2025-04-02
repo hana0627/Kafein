@@ -15,10 +15,10 @@ data class CompanyEntity (
     @Column(length = 255, nullable = true)
     var companyName: String,
     @OneToMany(mappedBy = "company")
-    val userEntity: List<UserEntity>,
+    val userEntity: MutableList<UserEntity>,
 
     @OneToMany(mappedBy = "companyEntity")
-    val productEntity: List<ProductEntity>,
+    val productEntity: MutableList<ProductEntity>,
 
     var deleted: Boolean = false,
 
@@ -34,8 +34,8 @@ data class CompanyEntity (
     constructor(companyCode: String, companyName: String) : this(
         companyCode = companyCode,
         companyName = companyName,
-        userEntity = emptyList(),
-        productEntity = emptyList(),
+        userEntity = mutableListOf(),
+        productEntity = mutableListOf(),
         deleted = false,
         deletedDate = null,
         null
@@ -45,8 +45,8 @@ data class CompanyEntity (
         fun fixture(
             companyCode: String = "A0000001",
             companyName: String = "하나다방",
-            userEntity: List<UserEntity> = mutableListOf(),
-            productEntity: List<ProductEntity> = mutableListOf(),
+            userEntity: MutableList<UserEntity> = mutableListOf(),
+            productEntity: MutableList<ProductEntity> = mutableListOf(),
             deleted: Boolean = false,
             deletedDate: LocalDateTime? = null,
             id: Long? = null
