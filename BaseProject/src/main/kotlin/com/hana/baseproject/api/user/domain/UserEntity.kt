@@ -2,14 +2,16 @@ package com.hana.baseproject.api.user.domain
 
 import com.hana.baseproject.api.company.domain.CompanyEntity
 import com.hana.baseproject.api.order.domain.OrderEntity
+import com.hana.baseproject.api.user.controller.request.UserUpdate
 import com.hana.baseproject.api.user.domain.constant.Gender
 import com.hana.baseproject.api.user.domain.constant.UserType
 import jakarta.persistence.*
+import java.time.Clock
 import java.time.LocalDateTime
 
 @Entity
 @Table(name = "user_account", indexes = arrayOf(Index(name = "idx_user_account", columnList = "username")))
-class UserEntity(
+data class UserEntity(
 
     @Column(length = 100, updatable = false, nullable = false)
     val username: String,
@@ -44,11 +46,11 @@ class UserEntity(
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long?,
+    var id: Long? = null,
 
 
     @OneToMany(mappedBy = "user")
-    val orders: List<OrderEntity>,
+    val orders: List<OrderEntity> = mutableListOf(),
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -64,7 +66,7 @@ class UserEntity(
             password: String = "123456",
             description: String = "하나다방 사장님",
             phoneNumber: String = "010-1234-5678",
-            userType: UserType = UserType.CUSTOMER,
+            userType: UserType = UserType.OWNER,
             gender: Gender = Gender.F,
             point: Int = 0,
             deleted: Boolean = false,
@@ -94,4 +96,16 @@ class UserEntity(
         }
     }
 
+    fun updateUser(userUpdate: UserUpdate): UserEntity = copy(
+        username = userUpdate.username,
+        name = userUpdate.name,
+        phoneNumber = userUpdate.phoneNumber,
+        description = userUpdate.description,
+        userType = userUpdate.userType
+    )
+
+    fun delete(clock: Clock): UserEntity = copy(
+        deleted = true,
+        deletedDate = LocalDateTime.now(clock)
+    )
 }

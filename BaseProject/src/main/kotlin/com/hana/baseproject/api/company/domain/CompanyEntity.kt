@@ -20,6 +20,7 @@ data class CompanyEntity (
     @OneToMany(mappedBy = "companyEntity")
     val productEntity: MutableList<ProductEntity>,
 
+    //TODO val 변경 후 copy 메서드 사용하는것으로 변경
     var deleted: Boolean = false,
 
     @Column(nullable = true)

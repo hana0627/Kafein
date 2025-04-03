@@ -7,6 +7,7 @@ data class UserCreate (
 
     val username: String,
     val name: String,
+    val password: String,
     val phoneNumber: String,
     val description: String,
     val gender: Gender,
@@ -17,6 +18,7 @@ data class UserCreate (
         fun fixture(
             username: String = "hanana",
             name: String = "박하나",
+            password: String = "123456",
             phoneNumber: String = "010-1234-5678",
             description: String = "하나다방 사장님",
             gender: Gender = Gender.F,
@@ -26,6 +28,7 @@ data class UserCreate (
             return UserCreate(
                 username = username,
                 name = name,
+                password = password,
                 phoneNumber = phoneNumber,
                 description = description,
                 gender = gender,

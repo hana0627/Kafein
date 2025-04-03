@@ -7,7 +7,7 @@ data class UserUpdate (
     val name: String,
     val phoneNumber: String,
     val description: String,
-    var userType: UserType,
+    val userType: UserType,
     val companyCode: String,
 ){
 
