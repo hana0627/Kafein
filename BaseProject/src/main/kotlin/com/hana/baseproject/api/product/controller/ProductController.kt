@@ -41,10 +41,10 @@ class ProductController (
         return APIResponse.success(result)
     }
 
-    @DeleteMapping("/v2/{productCategoryId}/productCategory")
-    fun deleteProductCategory(@PathVariable("productCategoryId") productCategoryId: Long): APIResponse<ProductCategoryInformation> {
+    @DeleteMapping("/v2/{categoryCode}/productCategory")
+    fun deleteProductCategory(@PathVariable("categoryCode") categoryCode: String): APIResponse<Int> {
         // 상품타입을 삭제한다.
-        val result: ProductCategoryInformation = productService.deleteProductCategory(productCategoryId)
+        val result: Int = productService.deleteProductCategory(categoryCode)
         return APIResponse.success(result)
     }
     // ====== 상품타입 관련 - end ======

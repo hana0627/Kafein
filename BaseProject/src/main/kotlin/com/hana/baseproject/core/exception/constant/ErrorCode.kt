@@ -12,5 +12,7 @@ enum class ErrorCode (
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다."),
     CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테코리를 찾을 수 없습니다."),
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "상품을 찾을 수 없습니다."),
+    CATEGORY_CODE_LIMIT_EXCEEDED(HttpStatus.UNPROCESSABLE_ENTITY, "등록할 수 있는 상품갯수를 초과했습니다."),
+
 
 }

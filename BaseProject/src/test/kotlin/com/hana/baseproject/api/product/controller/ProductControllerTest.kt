@@ -209,26 +209,20 @@ class ProductControllerTest {
             deletedDate = deletedDate,
         )
 
-        val productCategoryId: Long = 1L
+        val categoryCode: String = productCategoryInformation.categoryCode
 
-        given(productService.deleteProductCategory(productCategoryId)).willReturn(productCategoryInformation)
+        given(productService.deleteProductCategory(categoryCode)).willReturn(1)
 
         //when & then
         mvc.perform(
-            delete("/v2/{productCategoryId}/productCategory", productCategoryId)
+            delete("/v2/{categoryCode}/productCategory", categoryCode)
         )
             .andExpect(status().isOk)
             .andExpect(content().contentType(APPLICATION_JSON))
-            .andExpect(jsonPath("$.result.productLevel").value(productCategoryInformation.productLevel.name))
-            .andExpect(jsonPath("$.result.categoryCode").value(productCategoryInformation.categoryCode))
-            .andExpect(jsonPath("$.result.upCategoryCode").value(productCategoryInformation.upCategoryCode))
-            .andExpect(jsonPath("$.result.categoryName").value(productCategoryInformation.categoryName))
-            .andExpect(jsonPath("$.result.deleted").value(true))
-            .andExpect(jsonPath("$.result.deletedDate").value(deletedDate.toString()))
-
+            .andExpect(jsonPath("$.result").value(1))
             .andDo(print())
 
-        then(productService).should().deleteProductCategory(productCategoryId)
+        then(productService).should().deleteProductCategory(categoryCode)
     }
 
     @Test
@@ -239,15 +233,15 @@ class ProductControllerTest {
             deleted = true,
             deletedDate = deletedDate,
         )
-        val productCategoryId: Long = 1L
+        val categoryCode: String = "wrongCategoryCode"
 
-        given(productService.deleteProductCategory(productCategoryId)).willThrow(
+        given(productService.deleteProductCategory(categoryCode)).willThrow(
             ApplicationException(ErrorCode.CATEGORY_NOT_FOUND, ErrorCode.CATEGORY_NOT_FOUND.message)
         )
 
         //when & then
         mvc.perform(
-            delete("/v2/{productCategoryId}/productCategory", productCategoryId)
+            delete("/v2/{categoryCode}/productCategory", categoryCode)
         )
             .andExpect(status().isOk)
             .andExpect(content().contentType(APPLICATION_JSON))

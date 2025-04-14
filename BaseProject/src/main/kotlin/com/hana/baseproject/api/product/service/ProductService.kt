@@ -11,7 +11,7 @@ interface ProductService {
     fun getProductCategories(): List<ProductCategoryInformation>
     fun createProductCategory(productCategoryCreate: ProductCategoryCreate): ProductCategoryInformation
     fun updateProductCategory(productCategoryUpdate: ProductCategoryUpdate): ProductCategoryInformation
-    fun deleteProductCategory(productCategoryId: Long): ProductCategoryInformation
+    fun deleteProductCategory(categoryCode: String): Int
     fun getProduct(productCode: String): ProductInformation
     fun getProductsByCompanyCode(companyCode: String): List<ProductInformation>
     fun createProduct(productCreate: ProductCreate): ProductInformation
