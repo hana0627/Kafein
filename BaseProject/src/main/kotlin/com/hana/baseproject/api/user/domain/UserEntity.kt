@@ -39,10 +39,10 @@ data class UserEntity(
     @Column(nullable = false)
     val point: Int,
 
-    var deleted: Boolean = false,
+    val deleted: Boolean = false,
 
     @Column(nullable = true)
-    var deletedDate: LocalDateTime? = null,
+    val deletedDate: LocalDateTime? = null,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -417,9 +417,8 @@ class UserServiceImplTest(
         val userUpdate: UserUpdate = UserUpdate.fixture(
             username = "wrongUsername",
         )
-        val user: UserEntity = UserEntity.fixture()
 
-        given(userRepository.findByUsername(user.username)).willReturn(null)
+        given(userRepository.findByUsername(userUpdate.username)).willReturn(null)
 
         //when
         val result = assertThrows<ApplicationException> {
