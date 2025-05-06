@@ -1,5 +1,7 @@
 package com.hana.baseproject.api.product.service.impl
 
+import com.hana.baseproject.api.company.domain.CompanyEntity
+import com.hana.baseproject.api.company.repository.CompanyRepository
 import com.hana.baseproject.api.product.controller.request.ProductCategoryCreate
 import com.hana.baseproject.api.product.controller.request.ProductCategoryUpdate
 import com.hana.baseproject.api.product.controller.request.ProductCreate
@@ -7,6 +9,7 @@ import com.hana.baseproject.api.product.controller.request.ProductUpdate
 import com.hana.baseproject.api.product.controller.response.ProductCategoryInformation
 import com.hana.baseproject.api.product.controller.response.ProductInformation
 import com.hana.baseproject.api.product.domain.ProductCategoryEntity
+import com.hana.baseproject.api.product.domain.ProductEntity
 import com.hana.baseproject.api.product.domain.constant.ProductLevel
 import com.hana.baseproject.api.product.repository.ProductCategoryRepository
 import com.hana.baseproject.api.product.repository.ProductRepository
@@ -18,13 +21,18 @@ import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
+import java.util.UUID.randomUUID
 
 @Service
 @Transactional(readOnly = true)
 class ProductServiceImpl(
     private val productCategoryRepository: ProductCategoryRepository,
     private val productRepository: ProductRepository,
+    private val companyRepository: CompanyRepository,
     private val clockConfig: ClockConfig,
 ) : ProductService {
 
@@ -79,7 +87,9 @@ class ProductServiceImpl(
     @Transactional
     override fun updateProductCategory(productCategoryUpdate: ProductCategoryUpdate): ProductCategoryInformation {
         // 상품타입을 수정한다.
-        val foundProductCategory: ProductCategoryEntity = productCategoryRepository.findByCategoryCode(productCategoryUpdate.categoryCode) ?: throw ApplicationException(ErrorCode.CATEGORY_NOT_FOUND)
+        val foundProductCategory: ProductCategoryEntity =
+            productCategoryRepository.findByCategoryCode(productCategoryUpdate.categoryCode)
+                ?: throw ApplicationException(ErrorCode.CATEGORY_NOT_FOUND)
 
         val updatedCategory = foundProductCategory.updateCategoryName(productCategoryUpdate.categoryName)
         productCategoryRepository.save(updatedCategory)
@@ -103,9 +113,9 @@ class ProductServiceImpl(
         // prefix로 Like조회하여 일괄삭제
         // em.flush 해야할수도...?
         // TODO how to test?
-        val result:Int = productCategoryRepository.deleteByCategoryCodeStartingWith(categoryCode, currentTime)
+        val result: Int = productCategoryRepository.deleteByCategoryCodeStartingWith(categoryCode, currentTime)
 
-        if(result == 0) {
+        if (result == 0) {
             throw ApplicationException(ErrorCode.CATEGORY_NOT_FOUND, ErrorCode.CATEGORY_NOT_FOUND.message)
         }
         return result
@@ -115,18 +125,100 @@ class ProductServiceImpl(
 
     override fun getProduct(productCode: String): ProductInformation {
         // 상품 한건을 조회한다.
-        TODO("Not yet implemented")
+        val foundProduct: ProductEntity =
+            productRepository.findByProductCode(productCode) ?: throw ApplicationException(
+                ErrorCode.PRODUCT_NOT_FOUND,
+                ErrorCode.PRODUCT_NOT_FOUND.message
+            )
+        val productCategory: ProductCategoryEntity = foundProduct.productCategory
+        val company: CompanyEntity = foundProduct.companyEntity
+
+        return ProductInformation(
+            productCode = foundProduct.productCode,
+            productName = foundProduct.productName,
+            price = foundProduct.price,
+            stock = foundProduct.stock,
+            productLevel = productCategory.productLevel,
+            categoryCode = productCategory.categoryCode,
+            categoryName = productCategory.categoryName,
+            companyCode = company.companyCode,
+            companyName = company.companyName,
+            deleted = foundProduct.deleted,
+            deletedDate = foundProduct.deletedDate,
+        )
     }
 
     override fun getProductsByCompanyCode(companyCode: String): List<ProductInformation> {
         // 회사별 상품을 조회한다.
-        TODO("Not yet implemented")
+        val company: CompanyEntity = companyRepository.findByCompanyCode(companyCode) ?: throw ApplicationException(
+            ErrorCode.COMPANY_NOT_FOUND,
+            ErrorCode.COMPANY_NOT_FOUND.message
+        )
+
+        //TODO N+1 문제 발생
+        val products: List<ProductEntity> = company.productEntity
+
+        return products.map { it ->
+            ProductInformation(
+                productCode = it.productCode,
+                productName = it.productName,
+                price = it.price,
+                stock = it.stock,
+                productLevel = it.productCategory.productLevel,
+                categoryCode = it.productCategory.categoryCode,
+                categoryName = it.productCategory.categoryName,
+                companyCode = company.companyCode,
+                companyName = company.companyName,
+                deleted = it.deleted,
+                deletedDate = it.deletedDate,
+            )
+        }
     }
 
     @Transactional
     override fun createProduct(productCreate: ProductCreate): ProductInformation {
         // 상품을 등록한다.
-        TODO("Not yet implemented")
+        val company: CompanyEntity = companyRepository.findByCompanyCode(productCreate.companyCode)
+            ?: throw ApplicationException(ErrorCode.COMPANY_NOT_FOUND, ErrorCode.COMPANY_NOT_FOUND.message)
+        val category: ProductCategoryEntity =
+            productCategoryRepository.findByCategoryCode(productCreate.categoryCode) ?: throw ApplicationException(
+                ErrorCode.CATEGORY_NOT_FOUND,
+                ErrorCode.CATEGORY_NOT_FOUND.message
+            )
+
+        // 상품코드생성로직
+        val productCode: String = createProductCode(clockConfig)
+        println("[Service] productCode = ${productCode}")
+
+        val product: ProductEntity = ProductEntity(
+            productCode = productCode,
+            productName = productCreate.productName,
+            price = productCreate.price,
+            stock = productCreate.stock,
+            productCategory = category,
+            orders = mutableListOf(),
+            companyEntity = company,
+            deleted = false,
+            deletedDate = null,
+            createdAt = LocalDateTime.now(clockConfig.getClock()),
+            id = null,
+        )
+
+        val savedProduct = productRepository.save(product)
+
+        return ProductInformation(
+            productCode = savedProduct.productCode,
+            productName = savedProduct.productName,
+            price = savedProduct.price,
+            stock = savedProduct.stock,
+            productLevel = category.productLevel,
+            categoryCode = category.categoryCode,
+            categoryName = category.categoryName,
+            companyCode = company.companyCode,
+            companyName = company.companyName,
+            deleted = savedProduct.deleted,
+            deletedDate = savedProduct.deletedDate,
+        )
     }
 
     @Transactional
@@ -181,12 +273,47 @@ class ProductServiceImpl(
 
 
         // TODO 100 이상 이면 예외발생
-        if(nextNumber >= 100) {
-            throw ApplicationException(ErrorCode.CATEGORY_CODE_LIMIT_EXCEEDED, ErrorCode.CATEGORY_CODE_LIMIT_EXCEEDED.message)
+        if (nextNumber >= 100) {
+            throw ApplicationException(
+                ErrorCode.CATEGORY_CODE_LIMIT_EXCEEDED,
+                ErrorCode.CATEGORY_CODE_LIMIT_EXCEEDED.message
+            )
         }
 
 
-        return  prefix + formattedNumber
+        return prefix + formattedNumber
+    }
+
+    // 생성시간날짜(yyyyMMdd) + 4자리 UUID() + sequence 6자리
+    internal fun createProductCode(clockConfig: ClockConfig): String {
+        // 날짜 생성
+        val currentDateTime: LocalDateTime = LocalDateTime.now(clockConfig.getClock())
+        val currentDate: LocalDate = currentDateTime.toLocalDate()
+        val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+        val datePart: String = currentDate.format(dateFormatter)
+
+        // UUID 생성
+        val uuid: String = randomUUID().toString().substring(0, 4).uppercase()
+
+        // sequence 생성 - start
+        val startDay: LocalDateTime = currentDate.atStartOfDay()
+        val endDay: LocalDateTime = currentDate.plusDays(1).atStartOfDay()
+        // TODO redis 적용하기
+        val countToday = productRepository.countByCreatedAtBetween(startDay, endDay)
+
+        // 다음 시퀀스 번호 계산 (개수 + 1)
+        val sequenceNumber = countToday + 1
+        val sequencePart = String.format("%06d", sequenceNumber) // 000000 ~ 999999
+
+        // sequence 생성 - end
+
+
+        // 만약 sequence가 999999가 넘는다면?
+
+
+        val result = datePart + uuid + sequencePart
+
+        return result
     }
 
 }

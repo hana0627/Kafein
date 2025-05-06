@@ -63,6 +63,7 @@ class UserServiceImpl(
                 ErrorCode.COMPANY_NOT_FOUND, ErrorCode.COMPANY_NOT_FOUND.message
             )
 
+        //TODO N+1 문제 발생
         val userEntity: List<UserEntity> = foundCompany.userEntity
 
         return userEntity.map { it: UserEntity ->

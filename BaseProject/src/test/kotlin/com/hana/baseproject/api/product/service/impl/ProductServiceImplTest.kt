@@ -1,9 +1,13 @@
 package com.hana.baseproject.api.product.service.impl
 
+import com.hana.baseproject.api.company.domain.CompanyEntity
+import com.hana.baseproject.api.company.repository.CompanyRepository
 import com.hana.baseproject.api.product.controller.request.ProductCategoryCreate
 import com.hana.baseproject.api.product.controller.request.ProductCategoryUpdate
 import com.hana.baseproject.api.product.controller.response.ProductCategoryInformation
+import com.hana.baseproject.api.product.controller.response.ProductInformation
 import com.hana.baseproject.api.product.domain.ProductCategoryEntity
+import com.hana.baseproject.api.product.domain.ProductEntity
 import com.hana.baseproject.api.product.domain.constant.ProductLevel
 import com.hana.baseproject.api.product.repository.ProductCategoryRepository
 import com.hana.baseproject.api.product.repository.ProductRepository
@@ -30,11 +34,12 @@ import java.util.*
 class ProductServiceImplTest(
     @Mock private val productCategoryRepository: ProductCategoryRepository,
     @Mock private val productRepository: ProductRepository,
+    @Mock private val companyRepository: CompanyRepository,
     @Mock private val clockConfig: ClockConfig,
 ) {
 
     @InjectMocks
-    private val productService: ProductServiceImpl = ProductServiceImpl(productCategoryRepository, productRepository, clockConfig)
+    private val productService: ProductServiceImpl = ProductServiceImpl(productCategoryRepository, productRepository, companyRepository, clockConfig)
 
     @Test
     fun 모든_상품타입_조회에_성공한다() {
@@ -541,6 +546,190 @@ class ProductServiceImplTest(
         assertThat(result.getMessage).isEqualTo(ErrorCode.CATEGORY_NOT_FOUND.message)
     }
 
+    @Test
+    fun 상품한건_조회에_성공한다() {
+        //given
+        val product = ProductEntity.fixture()
+        given(productRepository.findByProductCode(product.productCode)).willReturn(product)
 
+        //when
+        val result: ProductInformation = productService.getProduct(product.productCode)
 
+        //then
+        then(productRepository).should().findByProductCode(product.productCode)
+
+        assertThat(result.productCode).isEqualTo(product.productCode)
+        assertThat(result.productName).isEqualTo(product.productName)
+        assertThat(result.price).isEqualTo(product.price)
+        assertThat(result.stock).isEqualTo(product.stock)
+        assertThat(result.productLevel).isEqualTo(product.productCategory.productLevel)
+        assertThat(result.categoryCode).isEqualTo(product.productCategory.categoryCode)
+        assertThat(result.categoryName).isEqualTo(product.productCategory.categoryName)
+        assertThat(result.companyCode).isEqualTo(product.companyEntity.companyCode)
+        assertThat(result.companyName).isEqualTo(product.companyEntity.companyName)
+        assertThat(result.deleted).isEqualTo(product.deleted)
+        assertThat(result.deletedDate).isEqualTo(product.deletedDate)
+    }
+
+    @Test
+    fun 존재하지_않는_상품코드로_상품조회시_예외가_발생한다() {
+        //given
+        val wrongProductCode = "wrongProductCode"
+        given(productRepository.findByProductCode(wrongProductCode)).willReturn(null)
+
+        //when
+        val result = assertThrows<ApplicationException> {
+            productService.getProduct(wrongProductCode)
+        }
+
+        //then
+        then(productRepository).should().findByProductCode(wrongProductCode)
+
+        assertThat(result.getErrorCode).isEqualTo(ErrorCode.PRODUCT_NOT_FOUND)
+        assertThat(result.getMessage).isEqualTo(ErrorCode.PRODUCT_NOT_FOUND.message)
+    }
+
+    @Test
+    fun 특정회사의_상품조회에_성공한다() {
+        //given
+        val companyCode = "A0000001"
+        val company = CompanyEntity.fixture(
+            companyCode = companyCode,
+        )
+        val company2 = CompanyEntity.fixture(
+            companyCode = "A9999999",
+        )
+        val product1 = ProductEntity.fixture(
+            companyEntity = company,
+        )
+        val product2 = ProductEntity.fixture(
+            productCode = "2025041600000002",
+            productName = "아이스카페라떼",
+            price = 4000,
+            companyEntity = company,
+        )
+        val product3 = ProductEntity.fixture(
+            productCode = "2025041600001223",
+            productName = "카라멜마끼야또",
+            price = 4500,
+            companyEntity = company,
+        )
+        val products: List<ProductEntity> = mutableListOf(product1, product2)
+
+        given(companyRepository.findByCompanyCode(companyCode)).willReturn(company)
+        company.productEntity.addAll(products)
+
+        //when
+        val result: List<ProductInformation> = productService.getProductsByCompanyCode(companyCode)
+
+        //then
+        then(companyRepository).should().findByCompanyCode(companyCode)
+
+        assertThat(result.size).isEqualTo(2)
+        assertThat(result[0].productCode).isEqualTo(product1.productCode)
+        assertThat(result[0].productName).isEqualTo(product1.productName)
+        assertThat(result[0].price).isEqualTo(product1.price)
+        assertThat(result[0].stock).isEqualTo(product1.stock)
+        assertThat(result[0].productLevel).isEqualTo(product1.productCategory.productLevel)
+        assertThat(result[0].categoryCode).isEqualTo(product1.productCategory.categoryCode)
+        assertThat(result[1].categoryName).isEqualTo(product2.productCategory.categoryName)
+        assertThat(result[1].companyCode).isEqualTo(product2.companyEntity.companyCode)
+        assertThat(result[1].companyName).isEqualTo(product2.companyEntity.companyName)
+        assertThat(result[1].deleted).isEqualTo(product2.deleted)
+        assertThat(result[1].deletedDate).isEqualTo(product2.deletedDate)
+    }
+
+    @Test
+    fun 특정회사의_상품이_0개일때_빈_리스트를_반환한다() {
+        //given
+        val companyCode = "A0000001"
+        val company = CompanyEntity.fixture(
+            companyCode = companyCode,
+            productEntity = mutableListOf()
+        )
+
+        given(companyRepository.findByCompanyCode(companyCode)).willReturn(company)
+
+        //when
+        val result: List<ProductInformation> = productService.getProductsByCompanyCode(companyCode)
+
+        //then
+        then(companyRepository).should().findByCompanyCode(companyCode)
+
+        assertThat(result).isNotNull
+        assertThat(result.size).isEqualTo(0)
+    }
+
+    @Test
+    fun 존재하지_않는_회사코드로_회사상품_조회시_예외가_발생한다() {
+        //given
+        val wrongCompanyCode = "wrongComapnyCode"
+
+        given(companyRepository.findByCompanyCode(wrongCompanyCode)).willReturn(null)
+
+        //when
+        val result = assertThrows<ApplicationException> {
+            productService.getProductsByCompanyCode(wrongCompanyCode)
+        }
+
+        //then
+        then(companyRepository).should().findByCompanyCode(wrongCompanyCode)
+
+        assertThat(result.getErrorCode).isEqualTo(ErrorCode.COMPANY_NOT_FOUND)
+        assertThat(result.getMessage).isEqualTo(ErrorCode.COMPANY_NOT_FOUND.message)
+    }
+
+    @Test
+    fun 상품생성에_성공한다() {
+        //given
+
+        //when
+
+        //then
+    }
+
+    @Test
+    fun 잘못된_회사코드로_상품생성시_예외가_발생한다() {
+        //given
+
+        //when
+
+        //then
+    }
+
+    @Test
+    fun 잘못된_카테고리코드로_상품생성시_예외가_발생한다() {
+        //given
+
+        //when
+
+        //then
+    }
+
+    @Test
+    fun 하루에_999999개_이상의_상품등록시_예외가_발생한다() {
+        //given
+
+        //when
+
+        //then
+    }
+
+    @Test
+    fun 처음_등록한_상품은_끝자리가_000001로_끝난다() {
+        //given
+
+        //when
+
+        //then
+    }
+
+    @Test
+    fun 세번째_등록한_상품은_끝자리가_000003로_끝난다() {
+        //given
+
+        //when
+
+        //then
+    }
 }

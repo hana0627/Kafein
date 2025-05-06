@@ -225,6 +225,8 @@ class UserServiceImplTest(
         assertThat(result.getMessage).isEqualTo(ErrorCode.COMPANY_NOT_FOUND.message)
     }
 
+    //TODO 회사만 만들고 연관된 회원이 없는경우의 테스트코드 추가
+
     @Test
     fun 모든_회원을_조회한다() {
         //given
